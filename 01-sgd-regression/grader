@@ -1,0 +1,24 @@
+#! /usr/local/bin/python3
+
+import pytest
+import xml.dom.minidom
+import os
+import subprocess
+
+pytest.main(["--junitxml", "grader.xml"])
+doc = xml.dom.minidom.parse("grader.xml")
+os.remove("grader.xml")
+
+items = doc.getElementsByTagName("testsuite")
+failures = float(items[0].attributes["failures"].value)
+errors = float(items[0].attributes["errors"].value)
+skipped = float(items[0].attributes["skipped"].value)
+tests = float(items[0].attributes["tests"].value)
+
+subprocess.run(['rm', '-f', '_GRADE'])
+ok = tests - skipped - errors - failures
+grade = ok / tests * 5.0
+
+with open('_GRADE', 'w') as f:
+    print('{:3.1f}'.format(grade), file=f)
+
